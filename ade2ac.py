@@ -38,6 +38,7 @@ jacket = input("Name of jacket file: ")
 illustrator = input("Illustrator of jacket: ")
 bg_path = input("Path of background: ")
 bpm_text = input("Text of BPM: ")
+base_bpm = float(input(f"BaseBPM(Empty for: {adeproj['BaseBpm']}): ") or adeproj['BaseBpm'])
 title = input(
     f"Name of the song(Empty for: \"{adeproj['Title']}\"): ") or adeproj['Title']
 artist = input(
@@ -62,7 +63,7 @@ print(f"Preview: {preview_start}-{preview_end}")
 print(f"Jacket: {jacket}")
 print(f"Illustrator: {illustrator}")
 print(f"Background: {bg_path}")
-print(f"BaseBPM: {adeproj['BaseBpm']}")
+print(f"BaseBPM: {base_bpm}")
 print(f"BPMText: {bpm_text}")
 print(f"Skin: {skins[skin]}")
 print("Difficulties:")
@@ -80,7 +81,7 @@ for i in diffs_num:
         "chartPath": f"{i}.aff",
         "audioPath": audio,
         "jacketPath": jacket,
-        "baseBpm": adeproj['BaseBpm'],
+        "baseBpm": base_bpm,
         "bpmText": bpm_text,
         "syncBaseBpm": True,
         "backgroundPath": bg_path.replace("\\", "/").split("/")[-1],
@@ -118,12 +119,12 @@ for i in diffs_num:
     shutil.copy(pathlib.Path(proj_path) /
                 f"{i}.aff", pathlib.Path(f"./{package_name}/{package_name}/"))
 
-index = {
+index = [{
     "directory": package_name,
     "identifier": package_identifier,
     "settingsFile": "project.arcproj",
     "type": "level"
-}
+}]
 
 with open(f"./{package_name}/{package_name}/project.arcproj", "w") as f:
     yaml.dump(arcproj, f)
