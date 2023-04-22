@@ -1,5 +1,5 @@
 import json
-import pathlib
+from pathlib import Path
 import sys
 import os
 import shutil
@@ -26,23 +26,37 @@ colors = {
     ]
 }
 
-proj_path = args[1]
+proj_path = Path(args[1])
 
-with open(f"{proj_path}/Arcade/Project.arcade", "r") as f:
-    adeproj = json.load(f)
+adeproj_path = proj_path / "Arcade" / "Project.arcade"
 
-audio = input("Name of audio file: ")
-preview_start = int(input("Start of preview: "))
-preview_end = int(input("End of preview: "))
-jacket = input("Name of jacket file: ")
-illustrator = input("Illustrator of jacket: ")
-bg_path = input("Path of background: ")
-bpm_text = input("Text of BPM: ")
-base_bpm = float(input(f"BaseBPM(Empty for: {adeproj['BaseBpm']}): ") or adeproj['BaseBpm'])
+adeproj_exist = adeproj_path.is_file()
+
+if adeproj_exist:
+    with open(f"{proj_path}/Arcade/Project.arcade", "r") as f:
+        adeproj = json.load(f)
+else:
+    adeproj = {}
+
+def default_text(key):
+    if adeproj_exist:
+        return f"(Empty for: {adeproj[key]})"
+    else:
+        return ""
+
+audio = input("Audio file name: ")
+preview_start = int(input("Preview start: "))
+preview_end = int(input("Preview end: "))
+jacket = input("Jacket file name: ")
+illustrator = input("Jacket illustrator: ")
+bg_path = Path(input("Background Path: ").strip())
+base_bpm = float(input(f"BaseBPM{default_text('BaseBpm')}: ") or default_text('BaseBpm') and adeproj['BaseBpm'])
+base_bpm = base_bpm if base_bpm % 1 else int(base_bpm)
+bpm_text = input(f"BPM Text(Empty for: {base_bpm}): ") or f"{base_bpm}"
 title = input(
-    f"Name of the song(Empty for: \"{adeproj['Title']}\"): ") or adeproj['Title']
+    f"Song title{default_text('Title')}: ") or default_text('Title') and adeproj['Title']
 artist = input(
-    f"Artist of the song(Empty for: \"{adeproj['Artist']}\"): ") or adeproj['Artist']
+    f"Song Artist{default_text('Artist')}: ") or default_text('Artist') and adeproj['Artist']
 charter = input("Charter: ")
 skin = int(input("Skin(0, 1 or 2): "))
 
@@ -51,9 +65,14 @@ diffs_num = list(
 diffs = ["", "", "", ""]
 
 for i in diffs_num:
-    diff_text = str(adeproj['Difficulties'][i]['Rating'])
+    if adeproj_exist:
+        diff_text = str(adeproj['Difficulties'][i]['Rating'])
+        df_text = f"(Empty for:{diff_text})"
+    else:
+        diff_text = ""
+        df_text = ""
     diffs[i] = input(
-        f"Text of difficulty {i}(Empty for:\"{diff_text}\")") or diff_text
+        f"Difficulty Text {i}{df_text}: ") or diff_text
 
 print("Confirm informations:")
 print(f"Title: {title}")
@@ -84,7 +103,7 @@ for i in diffs_num:
         "baseBpm": base_bpm,
         "bpmText": bpm_text,
         "syncBaseBpm": True,
-        "backgroundPath": bg_path.replace("\\", "/").split("/")[-1],
+        "backgroundPath": bg_path.name,
         "title": title,
         "composer": artist,
         "charter": charter,
@@ -109,15 +128,15 @@ print(f"Package identifier: {package_identifier}")
 
 os.mkdir(f"./{package_name}")
 os.mkdir(f"./{package_name}/{package_name}")
-shutil.copy(pathlib.Path(proj_path) / audio,
-            pathlib.Path(f"./{package_name}/{package_name}/"))
-shutil.copy(pathlib.Path(proj_path) / jacket,
-            pathlib.Path(f"./{package_name}/{package_name}/"))
-shutil.copy(pathlib.Path(bg_path), pathlib.Path(
+shutil.copy(Path(proj_path) / audio,
+            Path(f"./{package_name}/{package_name}/"))
+shutil.copy(Path(proj_path) / jacket,
+            Path(f"./{package_name}/{package_name}/"))
+shutil.copy(bg_path, Path(
     f"./{package_name}/{package_name}/"))
 for i in diffs_num:
-    shutil.copy(pathlib.Path(proj_path) /
-                f"{i}.aff", pathlib.Path(f"./{package_name}/{package_name}/"))
+    shutil.copy(Path(proj_path) /
+                f"{i}.aff", Path(f"./{package_name}/{package_name}/"))
 
 index = [{
     "directory": package_name,
@@ -152,4 +171,4 @@ zip_dir(f"./{package_name}", f"./{package_identifier}")
 shutil.rmtree(f"./{package_name}")
 
 print("Done!")
-print(f"Output file: {pathlib.Path(f'./{package_identifier}').absolute()}")
+print(f"Output file: {Path(f'./{package_identifier}').absolute()}")
