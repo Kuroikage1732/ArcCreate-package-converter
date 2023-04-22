@@ -9,3 +9,5 @@ Convert Arcade Project to ArcCreate Package
 python ade2ac.py /Path/to/Arcade/Project/Direction
 ```
 This script will guide you to convert an *ArcadeProject* to an *ArcCreate Package File*.
+
+*Note: This script requires audio and jacket files in the project directory.*
